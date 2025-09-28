@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Our Gift Box</title>
+  <style>
+    body{
+      margin:0; display:flex; align-items:center; justify-content:center; height:100vh;
+      background:linear-gradient(135deg,#ffdde1,#ee9ca7);
+      font-family: 'Segoe UI',sans-serif; color:#333;
+      overflow:hidden;
+    }
+    .box{
+      position:relative; width:200px; height:200px; background:#ff6b81; border-radius:16px;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+      transition:transform 0.6s ease;
+    }
+    .box:hover{transform:scale(1.05);} 
+    .box.open{transform:scale(1.1) rotateX(15deg);}
+    .ribbon{
+      position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:40px; height:100%; background:rgba(255,255,255,0.6);
+    }
+    .tag{
+      position:absolute; bottom:-40px; left:50%; transform:translateX(-50%);
+      background:white; padding:6px 12px; border-radius:12px; font-size:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    }
+    .message{
+      position:absolute; top:60%; left:50%; transform:translate(-50%,-50%) scale(0.8);
+      text-align:center; font-size:20px; font-weight:600;
+      opacity:0; transition:all 0.8s ease;
+      padding:12px 20px; border-radius:16px;
+      background:rgba(255,255,255,0.7);
+      border:2px solid transparent;
+      animation: glow 2s infinite alternate;
+    }
+    .message.show{opacity:1; transform:translate(-50%,-50%) scale(1);} 
+    @keyframes glow{
+      from{border-color:#ff6b81;}
+      to{border-color:#ffd6e0;}
+    }
+    button.next, button.kiss{
+      margin-top:16px; padding:8px 16px; border:none; border-radius:8px;
+      background:#ff6b81; color:white; font-size:14px; cursor:pointer;
+      transition:background 0.3s ease;
+    }
+    button.next:hover, button.kiss:hover{background:#e25a6e;}
+    canvas{position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;}
+    .heart{
+      position:absolute; font-size:24px; animation: floatUp 3s forwards; pointer-events:none;
+    }
+    @keyframes floatUp{
+      0%{transform:translateY(0) scale(1); opacity:1;}
+      100%{transform:translateY(-200px) scale(1.5); opacity:0;}
+    }
+    audio{display:none;}
+  </style>
+</head>
+<body>
+  <div class="box" id="giftBox">
+    <div class="ribbon"></div>
+    <div class="tag">Click to open ❤️</div>
+  </div>
+  <div class="message" id="message"></div>
+  <canvas id="confetti"></canvas>
+  <audio id="bgm" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const box=document.getElementById('giftBox');
+    const message=document.getElementById('message');
+    const audio=document.getElementById('bgm');
+    const messages=[
+      "You’re my favorite person to annoy forever 😘",
+      "6 years and I still get butterflies 🦋",
+      "You + Me = Best love story ever ❤️",
+      "Happy Anniversary, my MOMO[Snehaa future Pandey]! 🎉"
+    ];
+    let step=0;
+
+    box.addEventListener('click',()=>{
+      if(!box.classList.contains('open')){
+        box.classList.add('open');
+        showMessage();
+        runConfetti();
+        audio.play().catch(()=>{});
+      }
+    });
+
+    function showMessage(){
+      let html=messages[step];
+      html+=`<br><button class="next">Next Surprise 🎁</button>`;
+      html+=`<br><button class="kiss">💖 Send me a kiss</button>`;
+      message.innerHTML=html;
+      message.classList.add('show');
+      document.querySelector('.next').addEventListener('click',()=>{
+        step++;
+        if(step<messages.length){showMessage();runConfetti();}
+      });
+      document.querySelector('.kiss').addEventListener('click',()=>{
+        spawnHeart();
+      });
+    }
+
+    function spawnHeart(){
+      const heart=document.createElement('div');
+      heart.className='heart';
+      heart.innerText='💖';
+      heart.style.left=(Math.random()*80+10)+'%';
+      heart.style.top='70%';
+      document.body.appendChild(heart);
+      setTimeout(()=>heart.remove(),3000);
+    }
+
+    // Confetti
+    const canvas=document.getElementById('confetti');
+    const ctx=canvas.getContext('2d');
+    let W=canvas.width=innerWidth, H=canvas.height=innerHeight;
+    let pieces=[];
+    function initConfetti(){
+      pieces=[];
+      for(let i=0;i<150;i++){
+        pieces.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*6+4,vy:Math.random()*3+2,color:["#ff6b81","#ffd166","#06d6a0","#118ab2"][Math.floor(Math.random()*4)]});
+      }
+    }
+    function drawConfetti(){
+      ctx.clearRect(0,0,W,H);
+      pieces.forEach(p=>{
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,2*Math.PI);
+        ctx.fillStyle=p.color;ctx.fill();
+        p.y+=p.vy; if(p.y>H) p.y=-10;
+      });
+      requestAnimationFrame(drawConfetti);
+    }
+    function runConfetti(){
+      if(pieces.length===0) initConfetti();
+    }
+    drawConfetti();
+
+    window.addEventListener('resize',()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight;initConfetti();});
+  </script>
+</body>
+</html>
